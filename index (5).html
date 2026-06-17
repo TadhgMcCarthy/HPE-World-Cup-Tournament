@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HPE World Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pitch: #0a1f0f; --pitch-mid: #0f2e16;
+    --gold: #f5c842; --white: #f0f0ec; --muted: #7a9e82;
+    --win-bg: rgba(46,204,113,0.12); --draw-bg: rgba(245,200,66,0.12);
+    --loss-bg: rgba(231,76,60,0.12); --pending-bg: rgba(74,110,82,0.08);
+    --border: rgba(255,255,255,0.07);
+  }
+  body { background: var(--pitch); color: var(--white); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+    background-size:60px 60px; pointer-events:none; z-index:0;
+  }
+  .container { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:0 20px 60px; }
+  header { padding:40px 0 28px; text-align:center; border-bottom:1px solid var(--border); margin-bottom:32px; }
+  .trophy { font-size:36px; margin-bottom:10px; }
+  h1 { font-family:'Barlow Condensed',sans-serif; font-size:clamp(26px,6vw,50px); font-weight:800; letter-spacing:0.04em; text-transform:uppercase; line-height:1; color:var(--gold); margin-bottom:6px; }
+  .subtitle { font-family:'Barlow Condensed',sans-serif; font-size:clamp(12px,2.5vw,16px); font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+  .updated { margin-top:12px; font-size:12px; color:var(--muted); }
+  .updated span { color:rgba(46,204,113,0.9); font-weight:600; }
+  .key { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:20px; font-size:12px; color:var(--muted); }
+  .key-item { display:flex; align-items:center; gap:6px; }
+  .key-dot { width:8px; height:8px; border-radius:2px; }
+  .section-label { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; padding-left:4px; }
+  .player-card { background:var(--pitch-mid); border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; transition:border-color 0.2s; }
+  .player-card:hover { border-color:rgba(245,200,66,0.2); }
+  .player-card.top { border-color:rgba(245,200,66,0.35); }
+  .player-card.top .card-top { background:rgba(245,200,66,0.06); }
+  .card-top { display:flex; align-items:center; padding:14px 18px; gap:14px; cursor:pointer; user-select:none; }
+  .rank-num { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; color:var(--muted); width:28px; text-align:center; flex-shrink:0; }
+  .medal { font-size:20px; width:28px; text-align:center; flex-shrink:0; }
+  .player-name { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; flex:1; }
+  .pts-block { text-align:right; flex-shrink:0; }
+  .pts-num { font-family:'Barlow Condensed',sans-serif; font-size:28px; font-weight:800; color:var(--gold); line-height:1; }
+  .pts-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .expand-icon { color:var(--muted); font-size:16px; margin-left:8px; transition:transform 0.25s; flex-shrink:0; }
+  .player-card.open .expand-icon { transform:rotate(180deg); }
+  .teams-grid { display:none; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; padding:4px 18px 16px; border-top:1px solid var(--border); }
+  .player-card.open .teams-grid { display:grid; }
+  .team-chip { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:7px; font-size:13px; font-weight:500; border:1px solid transparent; }
+  .team-chip.win  { background:var(--win-bg);     border-color:rgba(46,204,113,0.2); color:#7deba5; }
+  .team-chip.draw { background:var(--draw-bg);    border-color:rgba(245,200,66,0.2); color:#f5c842; }
+  .team-chip.loss { background:var(--loss-bg);    border-color:rgba(231,76,60,0.2);  color:#f08070; }
+  .team-chip.pending { background:var(--pending-bg); border-color:rgba(74,110,82,0.2); color:var(--muted); }
+  .chip-flag { font-size:17px; flex-shrink:0; }
+  .chip-name { flex:1; }
+  .chip-badge { font-size:10px; font-weight:700; letter-spacing:0.05em; padding:2px 5px; border-radius:4px; text-transform:uppercase; flex-shrink:0; }
+  .win  .chip-badge { background:rgba(46,204,113,0.2); color:#2ecc71; }
+  .draw .chip-badge { background:rgba(245,200,66,0.2); color:#f5c842; }
+  .loss .chip-badge { background:rgba(231,76,60,0.2);  color:#e74c3c; }
+  .pending .chip-badge { background:rgba(74,110,82,0.2); color:var(--muted); }
+  footer { text-align:center; padding-top:32px; border-top:1px solid var(--border); font-size:12px; color:#4a6e52; letter-spacing:0.04em; line-height:1.8; }
+  @media(max-width:480px){
+    .teams-grid { grid-template-columns:1fr 1fr; }
+    .card-top { padding:12px 14px; gap:10px; }
+    .player-name { font-size:18px; }
+    .pts-num { font-size:22px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="trophy">🏆</div>
+    <h1>HPE World Cup 2026</h1>
+    <div class="subtitle">Department Sweepstake · 9 Players · 45 Teams</div>
+    <div class="updated">Last updated: <span>Wed 17 June 2026</span></div>
+  </header>
+
+  <div class="key">
+    <div class="key-item"><div class="key-dot" style="background:#2ecc71"></div> Win (3pts)</div>
+    <div class="key-item"><div class="key-dot" style="background:#f5c842"></div> Draw (1pt)</div>
+    <div class="key-item"><div class="key-dot" style="background:#e74c3c"></div> Loss (0pts)</div>
+    <div class="key-item"><div class="key-dot" style="background:#4a6e52"></div> Yet to play</div>
+  </div>
+
+  <div class="section-label">Leaderboard</div>
+  <div id="leaderboard"></div>
+
+  <footer>
+    3pts for a win · 1pt for a draw · 0pts for a loss<br>
+    Tap a player to see their teams
+  </footer>
+</div>
+
+<script>
+// ── RESULTS: update this object after each matchday ──────────────
+// Each team gets an array of results in order played
+// W = win, D = draw, L = loss, [] = not played yet
+const RESULTS = {
+  "Brazil":       ["D"],
+  "Netherlands":  ["D"],
+  "Portugal":     [],
+  "Argentina":    [],
+  "Germany":      ["W"],
+  "France":       ["W"],
+  "England":      [],
+  "Belgium":      ["D"],
+  "Spain":        ["D"],
+  "Uruguay":      ["D"],
+  "Switzerland":  ["D"],
+  "Croatia":      [],
+  "Morocco":      ["D"],
+  "Colombia":     [],
+  "Japan":        ["D"],
+  "Senegal":      ["L"],
+  "USA":          ["W"],
+  "Mexico":       ["W"],
+  "Austria":      [],
+  "Ecuador":      ["L"],
+  "Algeria":      [],
+  "Iran":         ["D"],
+  "South Korea":  ["W"],
+  "Scotland":     ["W"],
+  "Turkey":       ["L"],
+  "Australia":    ["W"],
+  "Egypt":        ["D"],
+  "Panama":       ["L"],
+  "Tunisia":      ["L"],
+  "Ivory Coast":  ["W"],
+  "Norway":       ["W"],
+  "Sweden":       ["W"],
+  "Paraguay":     ["L"],
+  "DR Congo":     [],
+  "Canada":       ["D"],
+  "Czechia":      ["L"],
+  "Jordan":       [],
+  "Uzbekistan":   [],
+  "Qatar":        ["D"],
+  "South Africa": ["L"],
+  "Iraq":         ["L"],
+  "Ghana":        [],
+  "Cabo Verde":   ["D"],
+  "Saudi Arabia": ["D"],
+  "Bosnia":       ["D"],
+};
+
+// ── SWEEPSTAKE ASSIGNMENTS ────────────────────────────────────────
+const PLAYERS = [
+  { name:"Bell",      teams:["Brazil","Uruguay","Austria","Panama","Jordan"] },
+  { name:"Burry",     teams:["Netherlands","Switzerland","Ecuador","Tunisia","Uzbekistan"] },
+  { name:"Marshall",  teams:["Portugal","Croatia","Algeria","Ivory Coast","Qatar"] },
+  { name:"McCarthy",  teams:["Argentina","Morocco","Iran","Norway","South Africa"] },
+  { name:"Owen",      teams:["Germany","Colombia","South Korea","Sweden","Iraq"] },
+  { name:"Timms",     teams:["France","Japan","Scotland","Paraguay","Ghana"] },
+  { name:"Twose",     teams:["England","Senegal","Turkey","DR Congo","Cabo Verde"] },
+  { name:"Valentine", teams:["Belgium","USA","Australia","Canada","Saudi Arabia"] },
+  { name:"Williams",  teams:["Spain","Mexico","Egypt","Czechia","Bosnia"] },
+];
+
+const FLAGS = {
+  "Brazil":"🇧🇷","Uruguay":"🇺🇾","Austria":"🇦🇹","Panama":"🇵🇦","Jordan":"🇯🇴",
+  "Netherlands":"🇳🇱","Switzerland":"🇨🇭","Ecuador":"🇪🇨","Tunisia":"🇹🇳","Uzbekistan":"🇺🇿",
+  "Portugal":"🇵🇹","Croatia":"🇭🇷","Algeria":"🇩🇿","Ivory Coast":"🇨🇮","Qatar":"🇶🇦",
+  "Argentina":"🇦🇷","Morocco":"🇲🇦","Iran":"🇮🇷","Norway":"🇳🇴","South Africa":"🇿🇦",
+  "Germany":"🇩🇪","Colombia":"🇨🇴","South Korea":"🇰🇷","Sweden":"🇸🇪","Iraq":"🇮🇶",
+  "France":"🇫🇷","Japan":"🇯🇵","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Paraguay":"🇵🇾","Ghana":"🇬🇭",
+  "England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Senegal":"🇸🇳","Turkey":"🇹🇷","DR Congo":"🇨🇩","Cabo Verde":"🇨🇻",
+  "Belgium":"🇧🇪","USA":"🇺🇸","Australia":"🇦🇺","Canada":"🇨🇦","Saudi Arabia":"🇸🇦",
+  "Spain":"🇪🇸","Mexico":"🇲🇽","Egypt":"🇪🇬","Czechia":"🇨🇿","Bosnia":"🇧🇦",
+};
+
+function pts(r){ return r==='W'?3:r==='D'?1:0; }
+
+const medals = ['🥇','🥈','🥉'];
+const scored = PLAYERS.map(p => {
+  const teamData = p.teams.map(name => ({
+    name,
+    results: RESULTS[name]||[],
+    teamPts: (RESULTS[name]||[]).reduce((s,r)=>s+pts(r),0)
+  }));
+  return { ...p, teamData, total: teamData.reduce((s,t)=>s+t.teamPts,0) };
+}).sort((a,b)=>b.total-a.total);
+
+const lb = document.getElementById('leaderboard');
+scored.forEach((p,i) => {
+  const card = document.createElement('div');
+  card.className = 'player-card'+(i===0?' top':'');
+  const rankHtml = i<3?`<div class="medal">${medals[i]}</div>`:`<div class="rank-num">${i+1}</div>`;
+  const teamsHtml = p.teamData.map(t => {
+    let status='pending', badge='TBP';
+    if(t.results.length>0){
+      const last=t.results[t.results.length-1];
+      status=last==='W'?'win':last==='D'?'draw':'loss';
+      badge=t.results.join(' ');
+    }
+    return `<div class="team-chip ${status}">
+      <span class="chip-flag">${FLAGS[t.name]||'🏳️'}</span>
+      <span class="chip-name">${t.name}</span>
+      <span class="chip-badge">${badge}</span>
+    </div>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="card-top" onclick="this.closest('.player-card').classList.toggle('open')">
+      ${rankHtml}
+      <div class="player-name">${p.name}</div>
+      <div class="pts-block">
+        <div class="pts-num">${p.total}</div>
+        <div class="pts-label">pts</div>
+      </div>
+      <div class="expand-icon">▾</div>
+    </div>
+    <div class="teams-grid">${teamsHtml}</div>
+  `;
+  lb.appendChild(card);
+});
+</script>
+</body>
+</html>
